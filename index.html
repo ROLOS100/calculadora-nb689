@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Hidráulica - Redes de Agua (NB 689)</title>
+    <style>
+        :root {
+            --primary-color: #1B365D;
+            --secondary-color: #2E5B88;
+            --accent-color: #276A3C;
+            --bg-color: #F8F9FA;
+            --card-bg: #FFFFFF;
+            --text-color: #333333;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--secondary-color);
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 5px rgba(27, 54, 93, 0.3);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .results-section {
+            margin-top: 30px;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .result-card {
+            background: #F1F5F9;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .result-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .result-card p {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .status-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .status-ok {
+            background-color: #E2EFDA;
+            color: #276A3C;
+            border: 1px solid #A9D18E;
+        }
+
+        .status-alert {
+            background-color: #FFC7CE;
+            color: #9C0006;
+            border: 1px solid #FF8080;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Calculadora Hidráulica de Redes</h1>
+    <div class="subtitle">Diseño según Norma Boliviana NB 689 (Hazen-Williams)</div>
+
+    <div class="form-grid">
+        <div class="form-group">
+            <label for="poblacion">Población Actual (Habitantes):</label>
+            <input type="number" id="poblacion" value="450">
+        </div>
+        <div class="form-group">
+            <label for="dotacion">Dotación (L/hab/día):</label>
+            <input type="number" id="dotacion" value="100">
+        </div>
+        <div class="form-group">
+            <label for="longitud">Longitud del Tramo (m):</label>
+            <input type="number" id="longitud" value="350">
+        </div>
+        <div class="form-group">
+            <label for="diametro">Diámetro Interno (mm):</label>
+            <input type="number" id="diametro" value="53.6" step="0.1">
+        </div>
+        <div class="form-group">
+            <label for="cota_ini">Cota Piezométrica Inicial (m):</label>
+            <input type="number" id="cota_ini" value="2853.0" step="0.1">
+        </div>
+        <div class="form-group">
+            <label for="cota_terreno">Cota Terreno Nodo Final (m):</label>
+            <input type="number" id="cota_terreno" value="2810.0" step="0.1">
+        </div>
+    </div>
+
+    <button onclick="calcularRed()">Calcular Hidráulica</button>
+
+    <div class="results-section" id="seccionResultados" style="display:none;">
+        <h2 style="color: var(--primary-color); font-size: 18px; margin-bottom: 15px;">Resultados del Cálculo</h2>
+        <div class="results-grid">
+            <div class="result-card">
+                <h3>Caudal de Diseño (Qmaxh)</h3>
+                <p id="resQ">0.00 L/s</p>
+            </div>
+            <div class="result-card">
+                <h3>Velocidad en Tubería</h3>
+                <p id="resVel">0.00 m/s</p>
+            </div>
+            <div class="result-card">
+                <h3>Pérdida de Carga (hf)</h3>
+                <p id="resHf">0.00 m</p>
+            </div>
+            <div class="result-card">
+                <h3>Presión Disponible</h3>
+                <p id="resPresion">0.00 m.c.a.</p>
+            </div>
+        </div>
+        <div id="statusNorma" class="status-box"></div>
+    </div>
+</div>
+
+<script>
+function calcularRed() {
+    // Obtener valores de entrada
+    let P_act = parseFloat(document.getElementById('poblacion').value);
+    let dot = parseFloat(document.getElementById('dotacion').value);
+    let L = parseFloat(document.getElementById('longitud').value);
+    let D_mm = parseFloat(document.getElementById('diametro').value);
+    let CP_ini = parseFloat(document.getElementById('cota_ini').value);
+    let C_terreno = parseFloat(document.getElementById('cota_terreno').value);
+
+    // Parámetros Fijos NB 689
+    let t = 20; // 20 años
+    let i = 0.015; // 1.5%
+    let k1 = 1.2;
+    let k2 = 2.0;
+    let C_hw = 140;
+
+    // Población Futura
+    let P_fut = P_act * Math.pow((1 + i), t);
+
+    // Caudales
+    let Q_med = (P_fut * dot) / 86400.0;
+    let Q_maxh = Q_med * k1 * k2; // L/s
+
+    // Hidráulica (Hazen-Williams)
+    let Q_m3s = Q_maxh / 1000.0;
+    let D_m = D_mm / 1000.0;
+    let Area = (Math.PI * Math.pow(D_m, 2)) / 4.0;
+    let Velocidad = Q_m3s / Area;
+
+    // J = 10.67 * Q^1.852 / (C^1.852 * D^4.8704)
+    let J = (10.67 * Math.pow(Q_m3s, 1.852)) / (Math.pow(C_hw, 1.852) * Math.pow(D_m, 4.8704));
+    let hf = J * L;
+
+    let CP_fin = CP_ini - hf;
+    let Presion = CP_fin - C_terreno;
+
+    // Mostrar resultados
+    document.getElementById('seccionResultados').style.display = 'block';
+    document.getElementById('resQ').innerText = Q_maxh.toFixed(3) + " L/s";
+    document.getElementById('resVel').innerText = Velocidad.toFixed(2) + " m/s";
+    document.getElementById('resHf').innerText = hf.toFixed(2) + " m";
+    document.getElementById('resPresion').innerText = Presion.toFixed(2) + " m.c.a.";
+
+    let statusBox = document.getElementById('statusNorma');
+    let cumplePresion = (Presion >= 5.0 && Presion <= 50.0);
+    let cumpleVelocidad = (Velocidad >= 0.3 && Velocidad <= 2.0);
+
+    if (cumplePresion && cumpleVelocidad) {
+        statusBox.className = "status-box status-ok";
+        statusBox.innerText = "¡CUMPLE CON LA NORMA NB 689! (Presiones y velocidades dentro de rango óptimo)";
+    } else {
+        statusBox.className = "status-box status-alert";
+        statusBox.innerText = "¡ADVERTENCIA: FUERA DE NORMA! Verifique que la presión esté entre 5 y 50 m.c.a. y la velocidad entre 0.3 y 2.0 m/s.";
+    }
+}
+</script>
+
+</body>
+</html>
